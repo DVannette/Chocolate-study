@@ -1,0 +1,15 @@
+{
+    "contents" : "#Clear Variables\nrm(list=ls(all=TRUE))\nsetwd(\"~/Dropbox/pollEffects/\")\n\nlibrary(sqldf)\nlibrary(sciplot)\nlibrary(xtable)\nlibrary(memisc)\n\npre <- read.csv(\"data/pollEffectsPre.csv\", as.is=T,header=T)\npost <- read.csv(\"data/pollEffectsPost.csv\", as.is=T,header=T)\nserver <- read.csv(\"data/PollEffectsServer.csv\", as.is=T,header=T)\n\ndata<-sqldf(\"select * from server left join pre on pre.GUID = server.GUID where server.valid=1\")\ndata<-sqldf(\"select * from data inner join post on post.GUID = data.GUID\")\n\n#drop those who already voted\ndata<-data[data$preQ21==2,]\n\n#drop partials\ndata<-data[data$Q23_2_TEXT!=\"\",]\n\ndata$experimentCondition <-factor(data$experimentCondition, labels=c(\"Obama up\",\"Romney up\",\"Tie\",\"Control\"))\n\ndata$experimentCondition <- factor(data$experimentCondition,levels(data$experimentCondition)[c(4,1:3)])\n\n#drop \"others\" from pid\ndata<-data[data$preQ10!=4,]\ndata$dem<-0\ndata$rep<-0\ndata$ind<-0\n\ndata$dem[data$preQ10==1]<-1\ndata$rep[data$preQ10==2]<-1\ndata$ind[data$preQ10==3]<-1\n\ndata$pid <-factor(data$preQ10, labels=c(\"Democrat\",\"Republican\",\"Independent\"))\ndata$pid <- factor(data$pid,levels(data$pid)[c(3,2,1)])\n\n#voted\nvoted<-lm(Q1~experimentCondition*dem+experimentCondition*rep+experimentCondition*ind,data=data)\nmtable(voted)\n\n#voted for\ndata<-data[data$Q2<3,]\nvoted<-lm(Q2~experimentCondition,data=data[data$ind==1,])\nmtable(voted)\n\n\n#importance of voting\n\ndata$Q16<-(data$Q16-6)*-1\nimportance<-lm(Q16~experimentCondition*dem+experimentCondition*rep+experimentCondition*ind,data=data)\nmtable(importance)\n\n#fairness\ndata$Q25<-(data$Q25-6)*-1\nfairness<-lm(Q25~experimentCondition*dem+experimentCondition*rep+experimentCondition*ind,data=data)\nmtable(fairness)\n\n# importance of own vote\nvoteImportance<-lm(Q3~experimentCondition*dem+experimentCondition*rep+experimentCondition*ind,data=data)\nmtable(voteImportance)\n\n\n\n\n",
+    "created" : 1353954062352.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3206169193",
+    "id" : "995DEA0F",
+    "lastKnownWriteTime" : 1353953991,
+    "path" : "~/Dropbox/pollEffects/analysis.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
